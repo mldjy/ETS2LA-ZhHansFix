@@ -1,0 +1,12 @@
+# 编译产物
+bin/
+obj/
+*.user
+
+# 依赖（用 scripts/fetch-harmony.ps1 拉取，不入库）
+lib/*.dll
+lib/*.zip
+
+# 临时/草稿
+_probe/
+*.log
