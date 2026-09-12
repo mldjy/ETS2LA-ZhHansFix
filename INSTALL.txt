@@ -65,5 +65,4 @@ ETS2LA 简体中文补全（ZhHansFix）安装说明
 - 第三方社区插件，与 ETS2LA 官方无隶属关系。
 
 
-作者：迷路的鲸鱼（GitHub: @mldjy）
 许可：MIT
