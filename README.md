@@ -119,7 +119,7 @@ tools\collect.py            收割结果查看工具
 需要 .NET 10 SDK（ETS2LA 是 net10.0）。
 
 ```powershell
-cd D:\AI\ETS2LA-ZhHansFix
+cd <仓库所在目录>
 powershell -ExecutionPolicy Bypass -File scripts\fetch-harmony.ps1
 dotnet build ZhHansFix.Core\ZhHansFix.Core.csproj -c Release
 dotnet build ZhHansFix\ZhHansFix.csproj -c Release
