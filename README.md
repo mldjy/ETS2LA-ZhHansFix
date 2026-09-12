@@ -20,15 +20,26 @@ ETS2LA 自带的简中翻译只覆盖了程序本体的一部分，**插件设�
 ## 安装
 
 1. 到 [Releases](../../releases) 下载最新的 `ZhHansFix-vX.Y.Z.zip`
-2. 解压出三个 DLL
-3. 复制到 ETS2LA 的插件目录：
+2. 解压后运行安装脚本（自动复制文件夹并登记到 ETS2LA 的插件清单）：
 
-```
-%LOCALAPPDATA%\ETS2LA\current\Plugins\
+```powershell
+powershell -ExecutionPolicy Bypass -File install.ps1
 ```
 
-4. 重启 ETS2LA
-5. 到 `插件管理` 里**启用「简体中文补全」**（默认不启用，未启用时不会有任何改动）
+也可以手动安装：把 `mldjy.zhhansfix` 整个文件夹复制到 `%LOCALAPPDATA%\ETS2LA\current\Plugins\`，
+再在 `%APPDATA%\ETS2LA\InstalledPluginManifest.json` 的 `InstalledPlugins` 里加一条：
+
+```json
+{ "Id": "mldjy.zhhansfix", "Version": "1.0.0",
+  "DllPath": "Plugins\\mldjy.zhhansfix\\ZhHansFix.dll",
+  "Dependencies": [], "Type": 0 }
+```
+
+> ETS2LA 只自动扫描 `Plugins\` 根目录下的 DLL，**子文件夹里的插件必须登记清单才会被加载**
+> —— 这与 ETS2LA 原作者插件的安装方式一致（一个插件一个文件夹）。
+
+3. 重启 ETS2LA
+4. 到 `插件管理` 里**启用「简体中文补全」**（默认不启用，未启用时不会有任何改动）
 
 启用后日志中应出现：
 
