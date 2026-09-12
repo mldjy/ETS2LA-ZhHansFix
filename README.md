@@ -52,8 +52,7 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 %APPDATA%\ETS2LA\zh-hans-fix.json
 ```
 
-文件里放一组「原文 → 译文」的对照。JSON 引号里**左边的英文叫「键」**，表示「界面上出现这段文字时」；
-**右边的中文是「值」**，表示「换成什么」：
+文件里放一组「原文 → 译文」的对照：**引号里左边写界面上出现的英文原文，右边写它对应的中文译文**。
 
 ```json
 {
@@ -68,7 +67,7 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 ### 标签与数值拼成一整句的情况
 
 有些文案是「标签 + 数值」拼起来的，例如 `Speed: 39.7 km/h`、`Sorted 0 vehicles.`。
-这种要在键的**开头或结尾故意留一个空格**，只替换标签、数值原样保留：
+这种要在**原文的开头或结尾故意留一个空格**，只替换标签、数值原样保留：
 
 ```json
 {
@@ -78,7 +77,7 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 }
 ```
 
-| 键在 JSON 里的写法 | 替换哪一部分 | 结果 |
+| 原文在 JSON 里的写法 | 替换哪一部分 | 结果 |
 |---|---|---|
 | 首尾都不带空格 —— `"Path Length"` | 整段完全相同才替换 | `Path Length` → `路径长度` |
 | **结尾**是冒号（`:` / `：`）或空格 —— `"Speed:"`、`"By "` | 只替换**开头**那一段 | `Speed: 39.7 km/h` → `速度：39.7 km/h`；`By Tumppi066` → `作者：Tumppi066` |
