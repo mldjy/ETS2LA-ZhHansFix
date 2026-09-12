@@ -139,9 +139,9 @@ dotnet build ZhHansFix\ZhHansFix.csproj -c Release
 - 程序目录里的 `.po` 属于官方支持的本地化文件，但**程序更新会覆盖**；`%APPDATA%` 那份运行时词典不受影响，两者互为补充。
 - 仅适用于 Windows 版 ETS2LA。
 
-## 许可与署名
+## 许可
 
-- 本插件：MIT，作者 **迷路的鲸鱼**（GitHub: [@mldjy](https://github.com/mldjy)）
+- 本插件：MIT —— 见 [LICENSE](LICENSE)
 - 运行补丁依赖 [Lib.Harmony](https://github.com/pardeike/Harmony)（MIT）
 - 本项目为第三方社区插件，与 ETS2LA 官方**无隶属关系**；ETS2LA 商标与版权归其作者所有
 
