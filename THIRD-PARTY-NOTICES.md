@@ -19,5 +19,4 @@
 
 ## 本插件
 
-- 许可：MIT License
-- 作者：迷路的鲸鱼（GitHub: @mldjy）
+- 许可：MIT License（见 LICENSE）
