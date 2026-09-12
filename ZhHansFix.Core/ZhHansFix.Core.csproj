@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <OutputType>library</OutputType>
+    <AssemblyName>ZhHansFix.Core</AssemblyName>
+    <RootNamespace>ZhHansFix.Core</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Ets2laDir Condition="'$(Ets2laDir)' == ''">$(LOCALAPPDATA)\ETS2LA\current</Ets2laDir>
+  </PropertyGroup>
+
+  <!-- 本程序集由插件显式加载进默认(不可回收) AssemblyLoadContext：
+       ETS2LA 用可回收上下文加载插件，Harmony 的补丁包装方法无法引用可回收程序集里
+       的补丁方法（会报 Could not load file or assembly '0Harmony' ... Operation is not supported）。 -->
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(MSBuildProjectDirectory)\..\lib\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- 内置词典（外置 JSON 优先，见 Patcher.LoadDictionary） -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\dict\zh-hans.json">
+      <LogicalName>ZhHansFix.Core.dict.zh-hans.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
