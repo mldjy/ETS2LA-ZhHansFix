@@ -16,7 +16,6 @@ ETS2LA 简体中文补全（ZhHansFix）安装说明
 --------------------------
 1. 把整个 mldjy.zhhansfix 文件夹复制到：
      %LOCALAPPDATA%\ETS2LA\current\Plugins\
-   （与 ETS2LA 原作者插件相同的布局：一个插件一个文件夹）
 2. 用文本编辑器打开 %APPDATA%\ETS2LA\InstalledPluginManifest.json，
    在 "InstalledPlugins": [ ] 中增加一条（注意前一条后面要加逗号）：
      {
