@@ -1,68 +1,60 @@
 ETS2LA 简体中文补全（ZhHansFix）安装说明
 ========================================
 
-一、安装
---------
-1. 把本压缩包里的三个文件复制到 ETS2LA 的插件目录：
+一、安装（推荐：用安装脚本，会自动登记到 ETS2LA 的插件清单）
+----------------------------------------------------------
+1. 解压本压缩包。
+2. 右键 install.ps1 -> “使用 PowerShell 运行”；或在 PowerShell 中执行：
+     powershell -ExecutionPolicy Bypass -File install.ps1
+   脚本会做三件事：
+     · 把 mldjy.zhhansfix 整个文件夹复制到 ETS2LA 的 Plugins 目录
+     · 把插件登记到 %APPDATA%\ETS2LA\InstalledPluginManifest.json（先自动备份）
+     · 清理旧版直接放在 Plugins\ 根目录里的两个 DLL
+3. 重启 ETS2LA，在「插件管理」里启用「简体中文补全」。
 
-   %LOCALAPPDATA%\ETS2LA\current\Plugins\
+二、手动安装（不使用脚本时）
+--------------------------
+1. 把整个 mldjy.zhhansfix 文件夹复制到：
+     %LOCALAPPDATA%\ETS2LA\current\Plugins\
+   （与 ETS2LA 原作者插件相同的布局：一个插件一个文件夹）
+2. 用文本编辑器打开 %APPDATA%\ETS2LA\InstalledPluginManifest.json，
+   在 "InstalledPlugins": [ ] 中增加一条（注意前一条后面要加逗号）：
+     {
+       "Id": "mldjy.zhhansfix",
+       "Version": "1.0.0",
+       "DllPath": "Plugins\\mldjy.zhhansfix\\ZhHansFix.dll",
+       "Dependencies": [],
+       "Type": 0
+     }
+3. 重启 ETS2LA 并启用插件。
 
-   三个文件是：
-     ZhHansFix.dll
-     ZhHansFix.Core.dll
-     0Harmony.dll
-
-   如果该目录里已经有 0Harmony.dll（别的插件装的），可以跳过这一个。
-
-2. 重启 ETS2LA。
-
-3. 打开「插件管理」，启用「简体中文补全」。
-   （默认不启用；未启用时本插件不会改动任何界面文本。）
-
-4. 确认语言为简体中文：设置 → 显示 → 语言 → 简体中文。
-
-启用后，界面即为简体中文。
+   为什么要登记清单：ETS2LA 只会自动扫描 Plugins\ 根目录下的 DLL，
+   子文件夹里的插件必须出现在上述清单中才会被加载。
 
 
-二、启用 / 停用
+三、启用 / 停用
 ---------------
-在「插件管理」里勾选或取消勾选即可，瞬时生效：
-  - 启用：立即变为中文
-  - 停用：立即恢复英文
+在「插件管理」里勾选或取消勾选即可，瞬时生效。
+  · 启用：界面立即变为中文
+  · 停用：界面立即恢复英文
 
 
-三、卸载
+四、卸载
 --------
-删除插件目录下的这三个文件后重启即可：
-  ZhHansFix.dll
-  ZhHansFix.Core.dll
-  0Harmony.dll（若其它插件也用到，请不要删除）
-
-另外，程序目录里会出现本插件同步的 Localization\zh_Hans.po
-（程序目录与各插件目录下各一份），可一并删除。
+运行 uninstall.ps1（会删除文件夹并移除清单条目），或手动删除：
+  %LOCALAPPDATA%\ETS2LA\current\Plugins\mldjy.zhhansfix\  （整个文件夹）
+以及清单里对应的那一条。
 
 
-四、扩展词典
+五、扩展词典
 ------------
 词典是外置 JSON，改完存盘立即生效，不用重启程序：
-
   %APPDATA%\ETS2LA\zh-hans-fix.json
-
 格式：
   {
     "Enable Lane Changes": "启用变道",
     "Path Length": "路径长度"
   }
-
-以冒号或空格结尾的键会按前缀匹配，以空格开头的键会按后缀匹配。
-
-
-五、注意事项
-------------
-- 启动阶段会预挂补丁，约 8 秒。这段时间与程序解析地图数据同时进行，
-  不影响使用；此后启用/停用都是瞬时的。
-- 仅适用于 Windows 版 ETS2LA。
-- 第三方社区插件，与 ETS2LA 官方无隶属关系。
 
 
 六、免责声明
