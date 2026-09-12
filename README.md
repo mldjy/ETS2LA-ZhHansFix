@@ -36,7 +36,6 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 ```
 
 > ETS2LA 只自动扫描 `Plugins\` 根目录下的 DLL，**子文件夹里的插件必须登记清单才会被加载**
-> —— 这与 ETS2LA 原作者插件的安装方式一致（一个插件一个文件夹）。
 
 3. 重启 ETS2LA
 4. 到 `插件管理` 里**启用「简体中文补全」**（默认不启用，未启用时不会有任何改动）
