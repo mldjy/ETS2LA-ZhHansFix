@@ -413,5 +413,7 @@
   "Your system has less than 20GB of RAM. Extreme data fidelity uses significant amounts of RAM, and may cause your system to become unstable. Please select a lower fidelity.": "你的系统内存小于 20GB。「极高」数据保真度会占用大量内存，可能导致系统不稳定，请选择更低的档位。",
   "The zoom level of the ETS2LA window. This can be used to scale the window to your monitor's DPI settings.": "ETS2LA 窗口的缩放级别。可按显示器的 DPI 设置缩放窗口。",
   "The language ETS2LA will be displayed at. Translations are provided by the community, we cannot guarantee their accuracy.": "ETS2LA 的显示语言。翻译由社区提供，我们无法保证其准确性。",
-  "Warning: Your system has less than 20GB of RAM. You can only select up to High.": "警告：你的系统内存小于 20GB，最高只能选择「高」。"
+  "Warning: Your system has less than 20GB of RAM. You can only select up to High.": "警告：你的系统内存小于 20GB，最高只能选择「高」。",
+  "release": "正式版",
+  "nightly": "每夜版"
 }
