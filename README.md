@@ -84,7 +84,7 @@ By Tumppi066            ->  作者：Tumppi066
 Sorted 0 vehicles.      ->  已排序 0 辆车。
 ```
 
-对应的 JSON 写法（这里的空格是真的空格，可直接照抄）：
+对应的 JSON 写法：
 
 ```json
 {
