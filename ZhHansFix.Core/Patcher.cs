@@ -276,8 +276,10 @@ public static class Patcher
             {
                 if (k.Length < 3) continue;
                 var last = k[^1];
-                // 以冒号（含全角）结尾的是「标签：值」写法；以空格结尾的是「By 」「Sorted 」这类前缀写法
-                if (last == ':' || last == '：' || last == ' ')
+                var first = k[0];
+                // 前缀：键尾是「非字母数字」（冒号、空格、括号、句点、逗号、等号…）
+                // 覆盖 "Sorted "、"Speed:"、"…changing to green ("、"Most … in front (" 这类「固定标签 + 动态值」
+                if (!char.IsLetterOrDigit(last))
                 {
                     if (!tmp.TryGetValue(k[0], out var list))
                     {
@@ -286,8 +288,8 @@ public static class Patcher
                     }
                     list.Add(k);
                 }
-                // 以空格开头的是结尾片段的写法（" vehicles." / " km/h"）
-                if (k[0] == ' ' && k.Length >= 3)
+                // 后缀：键首是「非字母数字」，覆盖 " vehicles."、"), no need to slow down." 这类「动态值 + 固定尾巴」
+                if (!char.IsLetterOrDigit(first) && k.Length >= 3)
                 {
                     if (!tails.TryGetValue(last, out var tlist))
                     {
@@ -371,51 +373,88 @@ public static class Patcher
     /// </summary>
     internal static bool TryTranslatePrefixed(string source, out string result)
     {
-        LoadDictionary(force: false);
         result = string.Empty;
-        if (source.Length < 2) return false;
+        if (!_enabled || string.IsNullOrEmpty(source)) return false;
+        LoadDictionary(force: false);
+        var translated = Segmented(source, 0, out var changed);
+        if (!changed) return false;
+        result = translated;
+        return true;
+    }
 
-        var index = PrefixIndex;                 // 取快照，之后不再读取共享集合
-        if (!index.TryGetValue(source[0], out var candidates)) return false;
+    /// <summary>
+    /// 分段替换：把「固定标签 + 动态值 + 固定尾巴」这类拼装文案逐段译出。
+    /// 先试整串，再试最长前缀键，再试最长后缀键，命中后对剩余部分递归（深度上限 4）。
+    /// </summary>
+    private static string Segmented(string s, int depth, out bool changed)
+    {
+        changed = false;
+        if (depth >= 4 || s.Length < 2) return s;
 
-        string? bestKey = null;
-        foreach (var key in candidates)
-        {
-            if (key.Length >= source.Length) continue;
-            if (!source.StartsWith(key, StringComparison.Ordinal)) continue;
-            if (bestKey == null || key.Length > bestKey.Length) bestKey = key;
-        }
-        if (bestKey == null) return false;
-
+        // 1) 整串
         lock (Gate)
         {
-            if (!Dict.TryGetValue(bestKey, out var tr) || string.IsNullOrEmpty(tr)) return false;
-            var rest = source[bestKey.Length..];
-
-            // 结尾也带固定文案时一并替换（"Sorted 0 vehicles." → "已排序 0 辆车。"）
-            var tails = SuffixIndex;
-            if (rest.Length > 2 && tails.TryGetValue(rest[^1], out var tailKeys))
+            if (Dict.TryGetValue(s, out var whole) && !string.IsNullOrEmpty(whole))
             {
-                string? bestTail = null;
-                foreach (var tk in tailKeys)
-                {
-                    if (tk.Length >= rest.Length) continue;
-                    if (!rest.EndsWith(tk, StringComparison.Ordinal)) continue;
-                    if (bestTail == null || tk.Length > bestTail.Length) bestTail = tk;
-                }
-                if (bestTail != null && Dict.TryGetValue(bestTail, out var tt) && !string.IsNullOrEmpty(tt))
-                {
-                    var mid = rest[..^bestTail.Length];
-                    if (tr.EndsWith('：') && mid.StartsWith(' ')) mid = mid[1..];
-                    result = tr + mid + tt;
-                    return true;
-                }
+                changed = true;
+                return whole;
             }
-            // 译文以全角冒号结尾时，去掉紧随的半角空格，避免出现「速度： 39.7」这种空隙
-            if (tr.EndsWith('：') && rest.StartsWith(' ')) rest = rest[1..];
-            result = tr + rest;
-            return true;
         }
+
+        // 2) 最长前缀键
+        string? headKey = null;
+        if (PrefixIndex.TryGetValue(s[0], out var heads))
+        {
+            foreach (var k in heads)
+            {
+                if (k.Length >= s.Length) continue;
+                if (!s.StartsWith(k, StringComparison.Ordinal)) continue;
+                if (headKey == null || k.Length > headKey.Length) headKey = k;
+            }
+        }
+        if (headKey != null)
+        {
+            string headTr;
+            lock (Gate)
+            {
+                if (!Dict.TryGetValue(headKey, out headTr!) || string.IsNullOrEmpty(headTr)) headTr = null!;
+            }
+            if (headTr != null)
+            {
+                var rest = Segmented(s[headKey.Length..], depth + 1, out _);
+                if (headTr.EndsWith('：') && rest.StartsWith(' ')) rest = rest[1..];
+                changed = true;
+                return headTr + rest;
+            }
+        }
+
+        // 3) 最长后缀键
+        string? tailKey = null;
+        if (s.Length > 2 && SuffixIndex.TryGetValue(s[^1], out var tails))
+        {
+            foreach (var k in tails)
+            {
+                if (k.Length >= s.Length) continue;
+                if (!s.EndsWith(k, StringComparison.Ordinal)) continue;
+                if (tailKey == null || k.Length > tailKey.Length) tailKey = k;
+            }
+        }
+        if (tailKey != null)
+        {
+            string tailTr;
+            lock (Gate)
+            {
+                if (!Dict.TryGetValue(tailKey, out tailTr!) || string.IsNullOrEmpty(tailTr)) tailTr = null!;
+            }
+            if (tailTr != null)
+            {
+                var head = Segmented(s[..^tailKey.Length], depth + 1, out _);
+                changed = true;
+                return head + tailTr;
+            }
+        }
+
+        return s;
     }
 
     // ---------- 缺失收割 ----------
