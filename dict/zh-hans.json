@@ -173,7 +173,7 @@
   "Render All Semaphores": "渲染所有信号灯",
   "Render Target Semaphore": "渲染目标信号灯",
   "Update Channel": "更新通道",
-  "Select the update channel you want to listen to. Nightly contains experimental features and will crash more often.": "选择要接收更新的通道。Nightly 含实验性功能，崩溃会更频繁。",
+  "Select the update channel you want to listen to. Nightly contains experimental features and will crash more often.": "选择要接收更新的通道。开发版包含实验性功能，崩溃会更频繁。",
   "Library": "库",
   "Closed Source": "闭源",
   "Open Source": "开源",
@@ -415,5 +415,5 @@
   "The language ETS2LA will be displayed at. Translations are provided by the community, we cannot guarantee their accuracy.": "ETS2LA 的显示语言。翻译由社区提供，我们无法保证其准确性。",
   "Warning: Your system has less than 20GB of RAM. You can only select up to High.": "警告：你的系统内存小于 20GB，最高只能选择「高」。",
   "release": "正式版",
-  "nightly": "每夜版"
+  "nightly": "开发版"
 }
