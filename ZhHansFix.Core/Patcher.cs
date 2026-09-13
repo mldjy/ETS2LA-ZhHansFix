@@ -454,6 +454,36 @@ public static class Patcher
             }
         }
 
+        // 4) 中段：前缀键出现在字符串中间（"955.0m away, which is too far to be relevant." 这类「动态值 + 固定文案」）
+        string? midKey = null;
+        var midIdx = -1;
+        foreach (var c in s)
+        {
+            if (!PrefixIndex.TryGetValue(c, out var mids)) continue;
+            foreach (var k in mids)
+            {
+                if (k.Length >= s.Length) continue;
+                var idx = s.IndexOf(k, StringComparison.Ordinal);
+                if (idx <= 0) continue;
+                if (midKey == null || k.Length > midKey.Length) { midKey = k; midIdx = idx; }
+            }
+        }
+        if (midKey != null)
+        {
+            string midTr;
+            lock (Gate)
+            {
+                if (!Dict.TryGetValue(midKey, out midTr!) || string.IsNullOrEmpty(midTr)) midTr = null!;
+            }
+            if (midTr != null)
+            {
+                var left = s[..midIdx];
+                var rest = Segmented(s[(midIdx + midKey.Length)..], depth + 1, out _);
+                changed = true;
+                return left + midTr + rest;
+            }
+        }
+
         return s;
     }
 
