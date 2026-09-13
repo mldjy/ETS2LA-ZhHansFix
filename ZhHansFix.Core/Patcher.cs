@@ -131,6 +131,12 @@ public static class Patcher
             var netMetaPatched = NetworkMetadataPatcher.Apply(_harmony);
             notes.Add($"net {netMetaPatched}");
 
+            // 第五层：Blazor 渲染树（设置页等 razor 页面里的字面量标题/说明/选项，
+            // 既不过 T._() 也不经 ImGui，只有在渲染树入口才拦得到）
+            var blazorPatched = BlazorPatcher.Apply(_harmony);
+            notes.Add($"blazor {blazorPatched}");
+
+
             _status = string.Join("+", notes);
             sw.Stop();
             return $"{_status} patched in {sw.ElapsedMilliseconds}ms, dictionary {Dict.Count} entries";
