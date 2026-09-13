@@ -19,7 +19,7 @@
   "No status": "无状态",
   "No planned path data or telemetry data.": "没有规划路径数据或遥测数据。",
   "No telemetry data.": "没有遥测数据。",
-  "m away, which is too far to be relevant.": " 米远，距离过远，不参与计算。",
+  "m away, which is too far to be relevant.": " 米，距离太远，不参与判断。",
   "Based on upcoming path curvature.": "基于前方路径曲率。",
   "Based on upcoming path semaphores.": "基于前方路径信号灯。",
   "Closest semaphore is": "最近的信号灯为",
@@ -348,5 +348,6 @@
   "None": "无",
   "UID:": "UID：",
   "Prefab:": "预制件：",
-  "Hide Installed: ": "隐藏已安装："
+  "Hide Installed: ": "隐藏已安装：",
+  "Closest semaphore is ": "最近的信号灯为 "
 }
