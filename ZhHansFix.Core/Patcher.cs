@@ -44,10 +44,23 @@ public static class Patcher
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "ETS2LA", "zh-hans-served.txt");
 
+    /// <summary>
+    /// %APPDATA%\ETS2LA\zh-hans-trace.on — 存在时才启用调用位置追踪（排查用，默认关闭）。
+    /// 追踪记录写在 %APPDATA%\ETS2LA\zh-hans-paths.txt。
+    /// </summary>
+    public static string TraceFlagPath { get; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "ETS2LA", "zh-hans-trace.on");
+
+    public static string TraceLogPath { get; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "ETS2LA", "zh-hans-paths.txt");
+
     private static Harmony? _harmony;
     private static readonly Dictionary<string, string> Dict = new(StringComparer.Ordinal);
     private static readonly HashSet<string> Missing = new(StringComparer.Ordinal);
     private static readonly HashSet<string> Served = new(StringComparer.Ordinal);
+    private static readonly HashSet<string> Traced = new(StringComparer.Ordinal);
     private static readonly object Gate = new();
     private static DateTime _dictStamp = DateTime.MinValue;
     private static DateTime _lastMissFlush = DateTime.MinValue;
@@ -534,9 +547,40 @@ public static class Patcher
                 var dir = Path.GetDirectoryName(ServedLogPath);
                 if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
                 File.AppendAllLines(ServedLogPath, new[] { source }, new UTF8Encoding(false));
+
+                // 可选：把「这条串是在哪个方法里被替换的」也记下来。
+                // 需要排查某段文案明明命中词典却仍显示原文时，建一个 zh-hans-trace.on 文件即可开启。
+                if (Traced.Count < 800 && File.Exists(TraceFlagPath) && Traced.Add(source))
+                {
+                    var callPath = CallPath();
+                    if (!string.IsNullOrEmpty(callPath))
+                        File.AppendAllLines(TraceLogPath, new[] { source + "\t" + callPath }, new UTF8Encoding(false));
+                }
             }
         }
         catch { }
+    }
+
+    /// <summary>调用位置追踪：跳过 Harmony 与本插件自身的帧，取最靠上的若干层调用者。</summary>
+    private static string CallPath()
+    {
+        try
+        {
+            var st = new System.Diagnostics.StackTrace(false);
+            var parts = new List<string>();
+            for (int i = 0; i < st.FrameCount && parts.Count < 6; i++)
+            {
+                var m = st.GetFrame(i)?.GetMethod();
+                if (m == null) continue;
+                var type = m.DeclaringType?.FullName;
+                if (type == null) continue;
+                if (type.StartsWith("HarmonyLib") || type.StartsWith("ZhHansFix") ||
+                    type.StartsWith("System.") || type.StartsWith("Microsoft.")) continue;
+                parts.Add(type + "." + m.Name);
+            }
+            return string.Join(" <- ", parts);
+        }
+        catch { return string.Empty; }
     }
 
     /// <summary>当前界面语言是否简体中文。</summary>
