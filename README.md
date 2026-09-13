@@ -75,8 +75,8 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 |---|---|---|
 | "Path Length" | "路径长度" | 首尾都不带空格 → 整段完全相同才替换 |
 | "Speed:" | "速度：" | 原文**结尾**是冒号 → 只替换开头那一段 |
-| "By<mark>&nbsp;</mark>" | "作者：" | 原文**结尾**是空格（By 后面）→ 只替换开头那一段 |
-| "<mark>&nbsp;</mark>vehicles." | "<mark>&nbsp;</mark>辆车。" | 原文**开头**是空格（引号后第一个字符）→ 只替换结尾那一段 |
+| "By<mark>&ensp;</mark>" | "作者：" | 原文**结尾**是空格（By 后面）→ 只替换开头那一段 |
+| "<mark>&ensp;</mark>vehicles." | "<mark>&ensp;</mark>辆车。" | 原文**开头**是空格（引号后第一个字符）→ 只替换结尾那一段 |
 
 效果：
 
