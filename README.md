@@ -69,14 +69,14 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 有些文案是「标签 + 数值」拼起来的，例如 `Speed: 39.7 km/h`、`Sorted 0 vehicles.`。
 这种要在**原文的开头或结尾故意留一个空格**，只替换标签、数值原样保留。
 
-空格写在引号里看不出来，下面用**深黄方块**标出空格的位置（它就是一个空格，写进文件时照常敲空格）：
+空格写在引号里看不出来，下面用一条**深黄细线**标出空格的位置（它就是一个空格，写进文件时照常敲空格）：
 
 | 原文的写法 | 译文 | 匹配方式 |
 |---|---|---|
 | "Path Length" | "路径长度" | 首尾都不带空格 → 整段完全相同才替换 |
 | "Speed:" | "速度：" | 原文**结尾**是冒号 → 只替换开头那一段 |
-| "By![空格](docs/space-dark-yellow.png)" | "作者：" | 原文**结尾**是空格 → 只替换开头那一段 |
-| "![空格](docs/space-dark-yellow.png)vehicles." | "![空格](docs/space-dark-yellow.png)辆车。" | 原文**开头**是空格 → 只替换结尾那一段 |
+| "By![空格](docs/space-underline.png)" | "作者：" | 原文**结尾**是空格 → 只替换开头那一段 |
+| "![空格](docs/space-underline.png)vehicles." | "![空格](docs/space-underline.png)辆车。" | 原文**开头**是空格 → 只替换结尾那一段 |
 
 效果：
 
