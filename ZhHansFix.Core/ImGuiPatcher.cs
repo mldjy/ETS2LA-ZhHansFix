@@ -52,11 +52,88 @@ internal static class ImGuiPatcher
 
     internal static int Applied;
 
+    private static Harmony? _harmonyRef;
+    private static readonly HashSet<Assembly> PatchedCopies = new(ReferenceEqualityComparer.Instance);
+
+    /// <summary>
+    /// 给所有 Hexa.NET.ImGui 副本挂补丁。
+    ///
+    /// ETS2LA 的插件加载器（ETS2LA.Backend/PluginHandler/PluginLoadContext）只把
+    /// System./Microsoft./ETS2LA. 前缀的程序集共享到主上下文，Hexa.NET.ImGui 不在其中，
+    /// 于是每个插件都会加载自己的一份副本。只给主上下文那份挂补丁的话，
+    /// 插件自绘窗口里的文案（例如 ACC 约束的 ImGui.TextColored）就漏掉了。
+    /// 因此这里遍历所有已加载副本，并监听之后加载进来的副本。
+    /// </summary>
     public static int Apply(Harmony harmony)
     {
-        var imgui = AccessTools.TypeByName("Hexa.NET.ImGui.ImGui");
-        if (imgui == null) return 0;
+        _harmonyRef = harmony;
 
+        int patched = 0;
+        try
+        {
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                patched += PatchAssembly(asm);
+        }
+        catch { }
+
+        try
+        {
+            AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoad;
+            AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
+        }
+        catch { }
+
+        Applied = patched;
+        return patched;
+    }
+
+    private static void OnAssemblyLoad(object? sender, AssemblyLoadEventArgs e)
+    {
+        try
+        {
+            if (e.LoadedAssembly.GetName().Name == "Hexa.NET.ImGui")
+                PatchAssembly(e.LoadedAssembly);
+        }
+        catch { }
+    }
+
+    /// <summary>对某一份 Hexa.NET.ImGui 程序集挂补丁；同一份只挂一次。</summary>
+    internal static int PatchAssembly(Assembly asm)
+    {
+        if (asm == null || _harmonyRef == null) return 0;
+        try
+        {
+            if (asm.GetName().Name != "Hexa.NET.ImGui") return 0;
+        }
+        catch { return 0; }
+
+        lock (PatchedCopies)
+        {
+            if (!PatchedCopies.Add(asm)) return 0;
+        }
+
+        int patched = 0;
+        try
+        {
+            var imgui = asm.GetType("Hexa.NET.ImGui.ImGui");
+            if (imgui != null) patched += PatchTextParams(imgui);
+        }
+        catch { }
+        foreach (var typeName in new[] { "Hexa.NET.ImGui.ImDrawListPtr", "Hexa.NET.ImGui.ImDrawList" })
+        {
+            try
+            {
+                var t = asm.GetType(typeName);
+                if (t != null) patched += PatchDrawList(t);
+            }
+            catch { }
+        }
+        return patched;
+    }
+
+    /// <summary>ImGui 上带文案参数的静态方法（每个方法挂一个前缀）。</summary>
+    private static int PatchTextParams(Type imgui)
+    {
         int patched = 0;
         MethodInfo[] methods;
         try
@@ -86,54 +163,47 @@ internal static class ImGuiPatcher
                     var prefix = typeof(ImGuiPatches).GetMethod(prefixName, BindingFlags.Public | BindingFlags.Static);
                     if (prefix == null) continue;
 
-                    harmony.Patch(m, prefix: new HarmonyMethod(prefix));
+                    _harmonyRef!.Patch(m, prefix: new HarmonyMethod(prefix));
                     patched++;
                     break;   // 每个方法挂一个前缀即可
                 }
             }
             catch { /* 单个方法失败不影响其它 */ }
         }
-
-        Applied = patched;
-        return patched + ApplyDrawList(harmony);
+        return patched;
     }
 
     /// <summary>ImDrawList / ImDrawListPtr 上的文本绘制（实例方法，插件常用它画段落文字）。</summary>
-    private static int ApplyDrawList(Harmony harmony)
+    private static int PatchDrawList(Type t)
     {
         int patched = 0;
-        foreach (var typeName in new[] { "Hexa.NET.ImGui.ImDrawListPtr", "Hexa.NET.ImGui.ImDrawList" })
+        MethodInfo[] methods;
+        try { methods = t.GetMethods(BindingFlags.Public | BindingFlags.Instance); } catch { return 0; }
+
+        foreach (var m in methods)
         {
-            var t = AccessTools.TypeByName(typeName);
-            if (t == null) continue;
-            MethodInfo[] methods;
-            try { methods = t.GetMethods(BindingFlags.Public | BindingFlags.Instance); } catch { continue; }
-
-            foreach (var m in methods)
+            try
             {
-                try
+                var ps = m.GetParameters();
+                string? beginName = null, endName = null;
+                foreach (var p in ps)
                 {
-                    var ps = m.GetParameters();
-                    string? beginName = null, endName = null;
-                    foreach (var p in ps)
-                    {
-                        if (p.ParameterType != typeof(string)) continue;
-                        if (p.Name == "textBegin" || p.Name == "text") beginName = p.Name;
-                        if (p.Name == "textEnd" || p.Name == "text_end") endName = p.Name;
-                    }
-                    if (beginName == null) continue;   // 只处理能拿到正文的参数
-
-                    // textBegin 有配对 textEnd 的重载要额外校验（见 ImGuiPatches），因此分成两个前缀
-                    var prefixName = endName != null
-                        ? nameof(ImGuiPatches.PrefixDrawTextBeginEnd)
-                        : nameof(ImGuiPatches.PrefixDrawTextBegin);
-                    var prefix = typeof(ImGuiPatches).GetMethod(prefixName, BindingFlags.Public | BindingFlags.Static);
-                    if (prefix == null) continue;
-                    harmony.Patch(m, prefix: new HarmonyMethod(prefix));
-                    patched++;
+                    if (p.ParameterType != typeof(string)) continue;
+                    if (p.Name == "textBegin" || p.Name == "text") beginName = p.Name;
+                    if (p.Name == "textEnd" || p.Name == "text_end") endName = p.Name;
                 }
-                catch { }
+                if (beginName == null) continue;   // 只处理能拿到正文的参数
+
+                // textBegin 有配对 textEnd 的重载要额外校验（见 ImGuiPatches），因此分成两个前缀
+                var prefixName = endName != null
+                    ? nameof(ImGuiPatches.PrefixDrawTextBeginEnd)
+                    : nameof(ImGuiPatches.PrefixDrawTextBegin);
+                var prefix = typeof(ImGuiPatches).GetMethod(prefixName, BindingFlags.Public | BindingFlags.Static);
+                if (prefix == null) continue;
+                _harmonyRef!.Patch(m, prefix: new HarmonyMethod(prefix));
+                patched++;
             }
+            catch { }
         }
         return patched;
     }
