@@ -76,23 +76,6 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 | `"By<mark>&nbsp;</mark>"` | `"作者："` | 原文**结尾**是空格（`By` 后面）→ 只替换开头那一段 |
 | `"<mark>&nbsp;</mark>vehicles."` | `"<mark>&nbsp;</mark>辆车。"` | 原文**开头**是空格（引号后第一个字符）→ 只替换结尾那一段 |
 
-#### 空格标记的颜色对比（在 GitHub 页面上查看）
-
-同一个空格（原文 `"By "` 里 By 后面那个），换不同写法后的实际显示效果：
-
-| 写法 | 效果 | 颜色可控性 |
-|---|---|---|
-| `<mark> </mark>` | "By<mark>&nbsp;</mark>" | GitHub 自带的高亮色，不可改 |
-| `<ins> </ins>` | "By<ins>&nbsp;</ins>" | GitHub 自带的绿，不可改 |
-| `<del> </del>` | "By<del>&nbsp;</del>" | GitHub 自带，不可改 |
-| `$\colorbox{red}{\ }$` | "By$\colorbox{red}{\ }$" | 任意颜色 |
-| `$\colorbox{orange}{\ }$` | "By$\colorbox{orange}{\ }$" | 任意颜色 |
-| `$\colorbox{gold}{\ }$` | "By$\colorbox{gold}{\ }$" | 任意颜色 |
-| `$\colorbox{green}{\ }$` | "By$\colorbox{green}{\ }$" | 任意颜色 |
-| `$\colorbox{cyan}{\ }$` | "By$\colorbox{cyan}{\ }$" | 任意颜色 |
-| `$\colorbox{blue}{\ }$` | "By$\colorbox{blue}{\ }$" | 任意颜色 |
-| `$\colorbox{violet}{\ }$` | "By$\colorbox{violet}{\ }$" | 任意颜色 |
-
 效果：
 
 ```
